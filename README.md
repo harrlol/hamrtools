@@ -31,3 +31,32 @@ java YOURDIR/picard.jar CreateSequenceDictionary R=genome.fa O=genome.dict
 ```out dir```: the directory where your intermediate files and your output table will be located.
 
 ```mismatch_num```: gather the sequencing length from the fastqc step, use 0.06 to multiply the sequencing length to obtain this number
+
+## consensusOverlap
+Script to overlap consensus mods with various libraries (UTR, CDS, gene, etc.) after post HAMR processing in R, the libraries are obtained in various banks like TAIR.
+
+USAGE: 
+```
+consensusOverlap.sh <consensus.bed> <cds.bed> <utr.bed> <gene.bed> <mrna.bed> <out dir>
+```
+```consensus.bed```: a bed file obtained from processing hamr predicted mod tables and keeping union/intersection of mods between biological replicates. 
+
+```cds.bed | utr.bed | gene.bed | mrna.bed```: annotated coding region for a given organism, obtainable via gtf/gff3 files. Please see https://github.com/dtrain16/NGS-scripts/blob/master/TAIR10_annotation.sh for example.
+
+```out dir```: where you want your overlap outputs to be, note that the bed file will be individually overlapped with all 4 library bed annotations, so 4 outputs will be generated. 
+
+## fasterq-dumpAdaptor
+We had difficulty installing sratoolkit and using the newest functions, so I created this script to manually use it but still high throughput. A quick tutorial:
+
+First, install the relative sratoolkit manually from https://github.com/ncbi/sra-tools/wiki/01.-Downloading-SRA-Toolkit 
+
+Next, create an SRR accession list (in .txt format) using the SRA run selector tool. Locate both your sratoolkit and your .txt.
+
+USAGE: 
+```
+fasterq-dumpAdaptor.sh <sratoolkit dir> <accession.txt> <out dir>
+```
+```sratoolkit dir```: where your sratoolkit is located.
+```accession.txt```: where your accession txt list is located.
+```out dir```: where you want your final fastq files to be.
+
