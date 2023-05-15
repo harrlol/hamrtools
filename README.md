@@ -62,4 +62,4 @@ fasterq-dumpAdaptor.sh <sratoolkit dir> <accession.txt> <out dir>
 
 ```out dir```: where you want your final fastq files to be.
 
-NOTE: add an empty line below the last line of SRR accession number before you run
+NOTE: add an empty line below the last line of SRR accession number in your .txt file before you run.
