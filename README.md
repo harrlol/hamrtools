@@ -1,5 +1,24 @@
 # hamrbox
-a box of tools that might be needed before or after HAMR
+A box of tools that might be needed before or after HAMR. The methods below are now in sequential order.
+
+## fasterq-dumpAdaptor
+We had difficulty installing sratoolkit and using the newest functions, so I created this script to manually use it but still high throughput. A quick tutorial:
+
+First, install the relative sratoolkit manually from https://github.com/ncbi/sra-tools/wiki/01.-Downloading-SRA-Toolkit 
+
+Next, create an SRR accession list (in .txt format) using the SRA run selector tool. Locate both your sratoolkit and your .txt.
+
+USAGE: 
+```
+fasterq-dumpAdaptor.sh <sratoolkit dir> <accession.txt> <out dir>
+```
+```sratoolkit dir```: where your sratoolkit is located.
+
+```accession.txt```: where your accession txt list is located.
+
+```out dir```: where you want your final fastq files to be.
+
+NOTE: add an empty line below the last line of SRR accession number in your .txt file before you run.
 
 ## fastq2hamr
 a shell wrapper program that takes in an adaptor-trimmed fastq file all the way to applying HAMR, yielding intermediates and hamr prediction table
@@ -32,6 +51,26 @@ java YOURDIR/picard.jar CreateSequenceDictionary R=genome.fa O=genome.dict
 
 ```mismatch_num```: gather the sequencing length from the fastqc step, use 0.06 to multiply the sequencing length to obtain this number
 
+
+## findConsensus
+
+This is the step directly upstream of consensusOverlap, it takes in a directory of hamr outputs and returns consensus bed files for each sample group found in said directory.
+
+Note: No R variables returned, and do NOT end the directory string with "/". 
+For example, "MyDir/MySubDir" is good, "MyDir/MySubDir/" is bad.
+
+Nomenclature requirement: within the directory, each .txt file must follow the form: "GENOTYPE_SEQTECH_rep#.mod.txt"
+
+USAGE:
+```
+Rscript findConsensus.R <mod dir> <consensus dir>
+```
+
+```mod dir```: where your hamr outputs are located
+
+```consensus dir```: where you want your consensus bed files to be located 
+
+
 ## consensusOverlap
 Script to overlap consensus mods with various libraries (UTR, CDS, gene, etc.) after post HAMR processing in R, the libraries are obtained in various banks like TAIR.
 
@@ -45,21 +84,16 @@ consensusOverlap.sh <consensus.bed> <cds.bed> <utr.bed> <gene.bed> <mrna.bed> <o
 
 ```out dir```: where you want your overlap outputs to be, note that the bed file will be individually overlapped with all 4 library bed annotations, so 4 outputs will be generated. 
 
-## fasterq-dumpAdaptor
-We had difficulty installing sratoolkit and using the newest functions, so I created this script to manually use it but still high throughput. A quick tutorial:
 
-First, install the relative sratoolkit manually from https://github.com/ncbi/sra-tools/wiki/01.-Downloading-SRA-Toolkit 
+## allLapPrep
 
-Next, create an SRR accession list (in .txt format) using the SRA run selector tool. Locate both your sratoolkit and your .txt.
+This is the step directly downstream of consensusOverlap, it takes in the overlaps and process them into a single long dataframe containing all the experimental and hamr prediction information.
 
-USAGE: 
+Nomenclature requirement: each .bed file must follow the form "GENOTYPE_SEQTECH_LAP.bed"
+
+USAGE:
 ```
-fasterq-dumpAdaptor.sh <sratoolkit dir> <accession.txt> <out dir>
+Rscript allLapPrep.R <overlap dir>
 ```
-```sratoolkit dir```: where your sratoolkit is located.
 
-```accession.txt```: where your accession txt list is located.
-
-```out dir```: where you want your final fastq files to be.
-
-NOTE: add an empty line below the last line of SRR accession number in your .txt file before you run.
+```overlap dir```: where the outputs of consensusOverlap is located.
