@@ -30,8 +30,8 @@ comb.union2 <- function(bedlist) {
   return(out)
 }
 
-findConsensus <- function(dir) {
-  file_names <- list.files(path = dir)
+findConsensus <- function(in_dir, out_dir) {
+  file_names <- list.files(path = in_dir)
   processed_variables <- c()
   for (file_name in file_names) {
     if (!(file_name %in% processed_variables)) {
@@ -45,8 +45,8 @@ findConsensus <- function(dir) {
       
       # If only 1 rep, then that rep is the consensus
       if (length(variables_to_process)==1) {
-        consensus <- bed2modtbl(fread(file.path(dir, variables_to_process)))
-        write.table(consensus, paste0(dir, "/", common_part, ".bed"), sep='\t', row.names=F, col.names=F, quote=F)
+        consensus <- bed2modtbl(fread(file.path(in_dir, variables_to_process)))
+        write.table(consensus, paste0(out_dir, "/", common_part, ".bed"), sep='\t', row.names=F, col.names=F, quote=F)
       } else {
         # If >1 rep, find combinations
         # Generate a matrix of 2 combinations of the files
@@ -55,8 +55,8 @@ findConsensus <- function(dir) {
         # Initiate list to contain all intersections
         intersect_list <- list()
         for (i in 1:ncol(variable_combinations)) {
-          var1 <- assign(variable_combinations[1, i], fread(file.path(dir, variable_combinations[1, i]))) 
-          var2 <- assign(variable_combinations[2, i], fread(file.path(dir, variable_combinations[2, i])))
+          var1 <- assign(variable_combinations[1, i], fread(file.path(in_dir, variable_combinations[1, i]))) 
+          var2 <- assign(variable_combinations[2, i], fread(file.path(in_dir, variable_combinations[2, i])))
           output <- comb.intersect(var1, var2)
           output_name <- paste0(variable_combinations[1, i], "_", variable_combinations[2, i])
           assign(output_name, output, envir = .GlobalEnv)
@@ -65,16 +65,16 @@ findConsensus <- function(dir) {
         
         # If only 1 intersect (only 2 reps), then that intersect is the consensus
         if (length(intersect_list)==1) {
-          write.table(intersect_list, paste0(dir, "/", common_part, ".bed"), sep='\t', row.names=F, col.names=F, quote=F)
+          write.table(intersect_list, paste0(out_dir, "/", common_part, ".bed"), sep='\t', row.names=F, col.names=F, quote=F)
         } else {
           # If >2 rep, then union is taken 
           # Apply union to the list of intersections
           consensus <- comb.union2(intersect_list)
-          write.table(consensus, paste0(dir, "/", common_part, ".bed"), sep='\t', row.names=F, col.names=F, quote=F)
+          write.table(consensus, paste0(out_dir, "/", common_part, ".bed"), sep='\t', row.names=F, col.names=F, quote=F)
         }
       }
     }
   }
 }
 
-findConsensus(args[1])
+findConsensus(args[1], args[2])

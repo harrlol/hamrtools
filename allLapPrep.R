@@ -23,8 +23,8 @@ isoUnsensitive <- function (modtbl) {
     summarize(gene = unique(unlist(strsplit(as.character(gene),".", fixed = TRUE))[1]))
 }
 
-allLapPrep <- function(dir) {
-  file_names <- list.files(path = dir)
+allLapPrep <- function(in_dir) {
+  file_names <- list.files(path = in_dir)
   
   # Initialize long df
   longdf <- NULL
@@ -43,7 +43,7 @@ allLapPrep <- function(dir) {
     genotype <- paste(setdiff(finfo, c(lap_type, seq_tech)), collapse = "_")
     
     # Import the file as a variable and pipe through the cleaning steps 
-    temp <- assign(file_name, fread(file.path(dir, file_name), stringsAsFactors = TRUE))
+    temp <- assign(file_name, fread(file.path(in_dir, file_name), stringsAsFactors = TRUE))
     temp_clean <- lap.clean(temp, lap_type)
     
     # UTR needs a bit more work because 5' and 3' isoform cleaning
@@ -79,4 +79,6 @@ allLapPrep <- function(dir) {
   return(longdf)
 }
 
-project1 <- allLapPrep(args[1])
+project <- allLapPrep(args[1])
+
+write.table(project, paste0(args[2], "/mod_long.csv"), sep='\t', row.names=F, col.names=T, quote=F)

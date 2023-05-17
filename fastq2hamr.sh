@@ -23,7 +23,7 @@ set -eu
 
 if [ "$#" -lt 8 ]; then
 echo "Missing arguments!"
-echo "USAGE: fastq2hamr.sh <sample.fastq> <anotation.gtf/gff3> <bowtie dir> <genome.fasta> <sorting_script.pl> <hamr_model.Rdata> <out dir> <read_length>"
+echo "USAGE: fastq2hamr.sh <sample.fastq> <anotation.gtf/gff3> <bowtie dir> <genome.fasta> <sorting_script.pl> <hamr_model.Rdata> <out dir> <mismatch_num>"
 echo "EXAMPLE:"
 exit 1
 fi
@@ -45,7 +45,7 @@ echo "genome = $4"
 echo "scorting script = $5"
 echo "hamr model = $6"
 echo "out = $7"
-echo "read length = $8"
+echo "mismatch number = $8"
 echo ""
 
 #maps the trimmed reads to provided annotated genome, can take ~1.5hr
@@ -130,5 +130,3 @@ echo ""
 echo "hamr..."
 python2.7 /Data04/harrli02/repo/HAMR/hamr.py \
     -fe $out/unique_RG_ordered_splitN.resort.bam $gno $mdl $out hamr_out 30 1 0.01 H4 1 .05 .05
-
-fi
