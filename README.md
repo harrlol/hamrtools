@@ -89,6 +89,8 @@ consensusOverlap.sh <consensus.bed> <cds.bed> <utr.bed> <gene.bed> <mrna.bed> <o
 
 This is the step directly downstream of consensusOverlap, it takes in the overlaps and process them into a single long dataframe containing all the experimental and hamr prediction information, the long dataframe will be outputted as a .csv file.
 
+Note: as mentioned in findConsensus, do NOT end the directory string with "/".
+
 Nomenclature requirement: each .bed file must follow the form "GENOTYPE_SEQTECH_LAP.bed"
 
 USAGE:
