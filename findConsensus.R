@@ -6,7 +6,7 @@ args=commandArgs(trailingOnly=TRUE)
 
 bed2modtbl <- function(bed) {
   out <- bed%>%
-    mutate(start=bp, end =bp, seqname=chr, score=".", Name=as.character(pred.mod), strand=as.character(strand))%>%
+    mutate(start=bp, end =bp, seqname=as.character(chr), score=".", Name=as.character(pred.mod), strand=as.character(strand))%>%
     select(seqname, start, end, Name, score, strand)
   return(out)
 }
@@ -41,7 +41,7 @@ findConsensus <- function(in_dir, out_dir) {
       variables_to_process <- grep(paste0("^", common_part, "_"), file_names, value = TRUE)
       
       # Add the selected files to processed variables
-      processed_variables <<- c(processed_variables, variables_to_process)
+      processed_variables <- c(processed_variables, variables_to_process)
       
       # If only 1 rep, then that rep is the consensus
       if (length(variables_to_process)==1) {
