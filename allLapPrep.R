@@ -42,38 +42,44 @@ allLapPrep <- function(in_dir) {
     # Obtain the genotype of the sample group
     genotype <- paste(setdiff(finfo, c(lap_type, seq_tech)), collapse = "_")
     
-    # Import the file as a variable and pipe through the cleaning steps 
-    temp <- assign(file_name, fread(file.path(in_dir, file_name), stringsAsFactors = TRUE))
-    temp_clean <- lap.clean(temp, lap_type)
+    # Set file path for testing and reading
+    fpath <- file.path(in_dir, file_name)
     
-    # UTR needs a bit more work because 5' and 3' isoform cleaning
-    if (lap_type == "UTR") {
-      # Add experimental information alongside hamr predictions and bind to long df
-      to_add1 <- data.frame(isoUnsensitive(temp_clean))%>%
-        filter(feature=="three_prime_UTR")%>%
-        mutate(genotype=genotype) %>%
-        mutate(seq_tech=seq_tech) %>%
-        mutate(lap_type="3'UTR") %>%
-        select(-feature)
-      to_add2 <- data.frame(isoUnsensitive(temp_clean))%>%
-        filter(feature=="five_prime_UTR")%>%
-        mutate(genotype=genotype) %>%
-        mutate(seq_tech=seq_tech) %>%
-        mutate(lap_type="5'UTR") %>%
-        select(-feature)
-      longdf <- rbind(longdf, to_add1, to_add2)
-    } else if (lap_type == "CDS") {
-      to_add <- data.frame(isoUnsensitive(temp_clean))%>%
-        mutate(genotype=genotype) %>%
-        mutate(seq_tech=seq_tech) %>%
-        mutate(lap_type=lap_type)
-      longdf <- rbind(longdf, to_add)
-    } else {
-      to_add <- data.frame(temp_clean)%>%
-        mutate(genotype=genotype) %>%
-        mutate(seq_tech=seq_tech) %>%
-        mutate(lap_type=lap_type)
-      longdf <- rbind(longdf, to_add)
+    # Some files can have no overlaps, consider only those that have
+    if (file.size(fpath)!=0) {
+      # Import the file as a variable and pipe through the cleaning steps 
+      temp <- assign(file_name, fread(file.path(in_dir, file_name), stringsAsFactors = TRUE))
+      temp_clean <- lap.clean(temp, lap_type)
+      
+      # UTR needs a bit more work because 5' and 3' isoform cleaning
+      if (lap_type == "UTR") {
+        # Add experimental information alongside hamr predictions and bind to long df
+        to_add1 <- data.frame(isoUnsensitive(temp_clean))%>%
+          filter(feature=="three_prime_UTR")%>%
+          mutate(genotype=genotype) %>%
+          mutate(seq_tech=seq_tech) %>%
+          mutate(lap_type="3'UTR") %>%
+          select(-feature)
+        to_add2 <- data.frame(isoUnsensitive(temp_clean))%>%
+          filter(feature=="five_prime_UTR")%>%
+          mutate(genotype=genotype) %>%
+          mutate(seq_tech=seq_tech) %>%
+          mutate(lap_type="5'UTR") %>%
+          select(-feature)
+        longdf <- rbind(longdf, to_add1, to_add2)
+      } else if (lap_type == "CDS") {
+        to_add <- data.frame(isoUnsensitive(temp_clean))%>%
+          mutate(genotype=genotype) %>%
+          mutate(seq_tech=seq_tech) %>%
+          mutate(lap_type=lap_type)
+        longdf <- rbind(longdf, to_add)
+      } else {
+        to_add <- data.frame(temp_clean)%>%
+          mutate(genotype=genotype) %>%
+          mutate(seq_tech=seq_tech) %>%
+          mutate(lap_type=lap_type)
+        longdf <- rbind(longdf, to_add)
+      }
     }
   }
   return(longdf)
