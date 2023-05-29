@@ -23,7 +23,8 @@ set -eu
 
 if [ "$#" -lt 8 ]; then
 echo "Missing arguments!"
-echo "USAGE: fastq2hamr.sh <sample.fastq> <anotation.gtf/gff3> <bowtie dir> <genome.fasta> <sorting_script.pl> <hamr_model.Rdata> <out dir> <mismatch_num>"
+echo "USAGE: fastq2hamr.sh <sample.fastq> <anotation.gtf/gff3> <bowtie dir> 
+<genome.fasta> <sorting_script.pl> <hamr_model.Rdata> <out dir> <mismatch_num> <filename dict>"
 echo "EXAMPLE:"
 exit 1
 fi
@@ -34,24 +35,102 @@ bt=$3
 gno=$4
 sort=$5
 mdl=$6
-out=$7
+#root out, true out and hamr out assigned later
+rout=$7
 len=$8
+dic=$9
+# Assume single end
+det=1
+
+smpext=$(basename "$smp")
+smpdir=$(dirname "$smp")
+smpkey="${smpext%.*}"
+smpname=""
+original_ext="${smpext##*.}"
+
+if [[ $smpkey == *_1* ]]; then
+  smpkey="${smpkey%_1*}"
+  smp1="$smpdir/${smpkey}_1.$original_ext"
+  smp2="$smpdir/${smpkey}_2.$original_ext"
+  # Paired end recognized
+  det=0
+  echo "$smpext is a part of a paired-end sequencing file"
+elif [[ $smpkey == *_2* ]]; then
+  # If _2 is in the filename, this file was processed along with its corresponding _1 so we skip
+  echo "$smpext has already been processed with its _1 counter part. Skipped."
+  echo ""
+  exit 1
+else 
+  echo "$smpext is a single-end sequencing file"
+  echo ""
+fi
+
+# Read the CSV file into a DataFrame
+mapfile -t names < <(awk -F, '{ print $1 }' "$dic")
+mapfile -t smpf < <(awk -F, '{ print $2 }' "$dic")
+
+# Create a dictionary from the DataFrame
+declare -A dictionary
+for ((i=0; i<${#names[@]}; i++)); do
+    dictionary[${names[i]}]=${smpf[i]}
+done
+
+# Retrieve the translated value
+if [[ ${dictionary[$smpkey]+_} ]]; then
+    smpname="${dictionary[$smpkey]}"
+    smpname="${smpname//$'\r'}"
+    echo "Sample Group: $smpname"
+else
+    echo "No filename found for input: $smpkey"
+    exit 1
+fi
+
+# Reassign / declare pipeline file directory
+
+if [ ! -d "$rout/$smpkey""_temp" ] 
+then
+    mkdir "$rout/$smpkey""_temp"
+fi
+
+out=$rout/$smpkey"_temp"
+echo "You can find all the intermediate files for $smpkey at $out" 
+
+
+# Reassign hamr output directory
+
+if [ ! -d $rout/hamr_out ] 
+then
+    mkdir $rout/hamr_out
+fi
+
+hamrout=$rout/hamr_out
+echo "You can find the HAMR output file for $smpkey at $hamrout/$smpname.mod.txt" 
+
+
 
 echo ""
-echo "sample = $1"
+echo "sample path = $1"
+echo "sample SRR = $smpkey"
+echo "sample name = $smpname"
 echo "annotation = $2"
 echo "bowtie directory = $3"
 echo "genome = $4"
 echo "scorting script = $5"
 echo "hamr model = $6"
-echo "out = $7"
 echo "mismatch number = $8"
 echo ""
 
+
+red=8
+if (($len > 8)); then
+  red=$((len +1))
+fi
+
 #maps the trimmed reads to provided annotated genome, can take ~1.5hr
 #fine tuning of the arguments might be needed
-echo "mapping reads to genome using tophat2..."
-tophat2 --library-type fr-firststrand --read-mismatches $len --read-edit-dist 8 --max-multihits 10 \
+if [ "$det" -eq 1 ]; then
+  echo "Performing tophat2 with a single-end file."
+  tophat2 --library-type fr-firststrand --read-mismatches $len --read-edit-dist $red  --max-multihits 10 \
     --b2-very-sensitive \
     --transcriptome-max-hits 10 \
     --no-coverage-search \
@@ -60,6 +139,20 @@ tophat2 --library-type fr-firststrand --read-mismatches $len --read-edit-dist 8 
     -p 4 \
     $bt \
     $smp
+
+else
+  echo "Performing tophat2 with a paired-end file."
+  tophat2 --library-type fr-firststrand --read-mismatches $len --read-edit-dist $red --max-multihits 10 \
+    --b2-very-sensitive \
+    --transcriptome-max-hits 10 \
+    --no-coverage-search \
+    --output-dir $out \
+    -G $ant \
+    -p 4 \
+    $bt \
+    $smp1 $smp2
+fi
+
 
 #sorts the accepted hits
 echo "sorting..."
@@ -129,4 +222,4 @@ echo ""
 #hamr step, can take ~1hr
 echo "hamr..."
 python2.7 /Data04/harrli02/repo/HAMR/hamr.py \
-    -fe $out/unique_RG_ordered_splitN.resort.bam $gno $mdl $out hamr_out 30 1 0.01 H4 1 .05 .05
+    -fe $out/unique_RG_ordered_splitN.resort.bam $gno $mdl $hamrout $smpname 30 1 0.01 H4 1 .05 .05

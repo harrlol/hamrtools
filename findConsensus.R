@@ -32,6 +32,7 @@ comb.union2 <- function(bedlist) {
 
 findConsensus <- function(in_dir, out_dir) {
   file_names <- list.files(path = in_dir)
+  file_names <- grep(".mods.txt", file_names,value=TRUE)
   processed_variables <- c()
   for (file_name in file_names) {
     if (!(file_name %in% processed_variables)) {
@@ -55,8 +56,8 @@ findConsensus <- function(in_dir, out_dir) {
         # Initiate list to contain all intersections
         intersect_list <- list()
         for (i in 1:ncol(variable_combinations)) {
-          var1 <- assign(variable_combinations[1, i], fread(file.path(in_dir, variable_combinations[1, i]))) 
-          var2 <- assign(variable_combinations[2, i], fread(file.path(in_dir, variable_combinations[2, i])))
+          var1 <- assign(variable_combinations[1, i], fread(file.path(in_dir, variable_combinations[1, i]),stringsAsFactors = TRUE)) 
+          var2 <- assign(variable_combinations[2, i], fread(file.path(in_dir, variable_combinations[2, i]),stringsAsFactors = TRUE))
           output <- comb.intersect(var1, var2)
           output_name <- paste0(variable_combinations[1, i], "_", variable_combinations[2, i])
           assign(output_name, output, envir = .GlobalEnv)
