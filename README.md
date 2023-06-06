@@ -10,13 +10,17 @@ Next, create an SRR accession list (in .txt format) using the SRA run selector t
 
 USAGE: 
 ```
-fasterq-dumpAdaptor.sh <sratoolkit dir> <accession.txt> <out dir>
+fasterq-dumpAdaptor.sh <sratoolkit dir> <accession.txt> <out dir> <SE/PE> <T/F>
 ```
 ```sratoolkit dir```: where your sratoolkit is located.
 
 ```accession.txt```: where your accession txt list is located.
 
 ```out dir```: where you want your final fastq files to be.
+
+```single end/paired end```: Specify PE for paired-end or SE for single-end.
+
+```pretrimming```: Specify T for pretrimmed datasets, otherwise the program will run trim-galore.
 
 NOTE: add an empty line below the last line of SRR accession number in your .txt file before you run.
 
