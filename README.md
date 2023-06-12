@@ -13,7 +13,7 @@ hamrbox is split into the below 2 suites:
 regular HAMR, crystalizes all the steps in Ryvkin et al.'s paper and extends the analysis through 4 algorhithms in R
 that transforms the HAMR output in more accessible ways.
 
-## #scHAMR: 
+### scHAMR: 
 single-cell HAMR, includes crucial preprocessing steps neccesitated for single cell data types. This method uses cell ranger
 to align the reads, Seurat to cluster the reads by cell type, then HAMR the reads by clusters. 
 
