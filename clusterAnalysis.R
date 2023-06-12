@@ -83,7 +83,7 @@ getHotspot <- function(df, deg) {
   
   # If no hot spot then end function
   if (nrow(cluster_list)==0) {
-    warning("No hotspots are found at this level")
+    warning(sprintf("No hotspots are found at level %s\n", deg))
   } else {
     # Otherwise, comine all single rows into a df and output
     hotspot_df <- NULL
@@ -99,6 +99,6 @@ d <- length(unique(temp$sample_group))
 
 c <- clusterByMod(longdf)
 write.table(c, paste0(args[2], "/cluster_proportions.csv"), sep='\t', row.names=F, col.names=T, quote=F)
-  
+
 h <- getHotspot(longdf, d)
 write.table(h, paste0(args[2], "/cluster_hotspots.csv"), sep='\t', row.names=F, col.names=T, quote=F)

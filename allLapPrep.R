@@ -58,13 +58,13 @@ allLapPrep <- function(in_dir) {
           filter(feature=="three_prime_UTR")%>%
           mutate(genotype=genotype) %>%
           mutate(seq_tech=seq_tech) %>%
-          mutate(lap_type="3'UTR") %>%
+          mutate(lap_type="3UTR") %>%
           select(-feature)
         to_add2 <- data.frame(isoUnsensitive(temp_clean))%>%
           filter(feature=="five_prime_UTR")%>%
           mutate(genotype=genotype) %>%
           mutate(seq_tech=seq_tech) %>%
-          mutate(lap_type="5'UTR") %>%
+          mutate(lap_type="5UTR") %>%
           select(-feature)
         longdf <- rbind(longdf, to_add1, to_add2)
       } else if (lap_type == "CDS") {

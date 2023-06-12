@@ -65,7 +65,7 @@ else
   echo ""
 fi
 
-# Read the CSV file into a DataFrame
+# Real the CSV file into a DataFrame
 mapfile -t names < <(awk -F, '{ print $1 }' "$dic")
 mapfile -t smpf < <(awk -F, '{ print $2 }' "$dic")
 
@@ -74,6 +74,11 @@ declare -A dictionary
 for ((i=0; i<${#names[@]}; i++)); do
     dictionary[${names[i]}]=${smpf[i]}
 done
+
+
+if [[ $smpkey == *_trimmed* ]]; then
+  smpkey="${smpkey%_trimmed*}"
+fi
 
 # Retrieve the translated value
 if [[ ${dictionary[$smpkey]+_} ]]; then
@@ -86,26 +91,25 @@ else
 fi
 
 # Reassign / declare pipeline file directory
-
-if [ ! -d "$rout/$smpkey""_temp" ] 
+if [ ! -d "$rout/pipeline/$smpkey""_temp" ] 
 then
-    mkdir "$rout/$smpkey""_temp"
+    mkdir "$rout/pipeline/$smpkey""_temp"
+    echo "created path: $rout/pipeline/$smpkey""_temp"
 fi
 
-out=$rout/$smpkey"_temp"
+out=$rout/pipeline/$smpkey"_temp"
 echo "You can find all the intermediate files for $smpkey at $out" 
 
 
 # Reassign hamr output directory
-
-if [ ! -d $rout/hamr_out ] 
+if [ ! -d "$rout/hamr_out" ] 
 then
     mkdir $rout/hamr_out
+    echo "created path: $rout/hamr_out"
 fi
 
 hamrout=$rout/hamr_out
 echo "You can find the HAMR output file for $smpkey at $hamrout/$smpname.mod.txt" 
-
 
 
 echo ""
@@ -222,4 +226,14 @@ echo ""
 #hamr step, can take ~1hr
 echo "hamr..."
 python2.7 /Data04/harrli02/repo/HAMR/hamr.py \
-    -fe $out/unique_RG_ordered_splitN.resort.bam $gno $mdl $hamrout $smpname 30 1 0.01 H4 1 .05 .05
+    -fe $out/unique_RG_ordered_splitN.resort.bam $gno $mdl $out $smpname 30 50 0.01 H4 .01 0 .05
+
+if [ ! -e "$out/${smpname}.mods.txt" ]
+then 
+    cd $hamrout
+    printf "${smpname} \n" >> zero_mod.txt
+    cd
+else
+# HAMR needs separate folders to store temp for each sample, so we move at the end
+    cp $out/${smpname}.mods.txt $hamrout
+fi
