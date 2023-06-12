@@ -57,6 +57,7 @@ USAGE: EXTRACT.sh <proj dir> <knownant> <distTECH> <distGENO> <gene annotation f
 NOTE in these analyses, the term overlap type might be mentioned. This refers to the kind of library we wish to use to select HAMR modifications for analysis. For example, the 3UTR type selects all HAMR mods that were predicted that lie within the 3' UTR of any given transcript as per indicated in the gtf file provided. The available types include: gene, 3UTR, 5UTR, CDS, mRNA. (case sensitive)
 
 
+## Constitutient Programs
 ### fasterq-dumpAdaptor
 We had difficulty installing sratoolkit and using the newest functions, so I created this script to manually use it but still high throughput. A quick tutorial:
 
