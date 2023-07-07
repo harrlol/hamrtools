@@ -4,16 +4,8 @@ library(dplyr)
 
 args=commandArgs(trailingOnly=TRUE)
 
-lap.clean <- function(bed, type) {
-  if (type=="gene") {
-    out <- select(bed, seq=V7, pos=V8, mod=V10, gene=V4, score=V11, strand=V12)
-  } else if (type=="UTR") {
-    out <- select(bed, seq=V7, pos=V8, mod=V10, gene=V5, feature=V6, score=V11, strand=V12)
-  } else if (type=="CDS") {
-    out <- select(bed, seq=V6, pos=V7, mod=V9, gene=V5, score=V10, strand=V11)
-  } else if (type=="mRNA") {
-    out <- select(bed, seq=V7, pos=V8, mod=V10, gene=V4, score=V11, strand=V12)
-  } else {stop("invalid type")}
+lap.clean <- function(bed) {
+  out <- select(bed, seq=V8, pos=V9, mod=V11, bio=V4, gene=V5, strand=V12, depth=V13)
   return(out)
 }
 
@@ -49,41 +41,30 @@ allLapPrep <- function(in_dir) {
     if (file.size(fpath)!=0) {
       # Import the file as a variable and pipe through the cleaning steps 
       temp <- assign(file_name, fread(file.path(in_dir, file_name), stringsAsFactors = TRUE))
-      temp_clean <- lap.clean(temp, lap_type)
+      temp_clean <- lap.clean(temp)
       
-      # UTR needs a bit more work because 5' and 3' isoform cleaning
-      if (lap_type == "UTR") {
+      # these needs a bit more work because isoform cleaning
+      if (lap_type == "threeUTR" || lap_type == "fiveUTR" || lap_type == "CDS" | lap_type == "primarymRNA") {
         # Add experimental information alongside hamr predictions and bind to long df
-        to_add1 <- data.frame(isoUnsensitive(temp_clean))%>%
-          filter(feature=="three_prime_UTR")%>%
-          mutate(genotype=genotype) %>%
-          mutate(seq_tech=seq_tech) %>%
-          mutate(lap_type="3UTR") %>%
-          select(-feature)
-        to_add2 <- data.frame(isoUnsensitive(temp_clean))%>%
-          filter(feature=="five_prime_UTR")%>%
-          mutate(genotype=genotype) %>%
-          mutate(seq_tech=seq_tech) %>%
-          mutate(lap_type="5UTR") %>%
-          select(-feature)
-        longdf <- rbind(longdf, to_add1, to_add2)
-      } else if (lap_type == "CDS") {
-        to_add <- data.frame(isoUnsensitive(temp_clean))%>%
-          mutate(genotype=genotype) %>%
-          mutate(seq_tech=seq_tech) %>%
-          mutate(lap_type=lap_type)
-        longdf <- rbind(longdf, to_add)
-      } else {
-        to_add <- data.frame(temp_clean)%>%
-          mutate(genotype=genotype) %>%
-          mutate(seq_tech=seq_tech) %>%
-          mutate(lap_type=lap_type)
-        longdf <- rbind(longdf, to_add)
+        to_add <- data.frame(isoUnsensitive(temp_clean))
+        } else if (lap_type == "ncRNA" || lap_type == "gene" || lap_type == "exon") {
+      # these will have bio as their actual biological function inherited from bed file
+        to_add <- data.frame(temp_clean)
+        } else {
+          msg <- paste("overlap type not recognized: ", lap_type, sep = "")
+          warning(msg)
+          }
+      # in any case, the to add will take the below variables from bed
+      to_add <- to_add%>%
+        mutate(genotype=genotype) %>%
+        mutate(seq_tech=seq_tech) %>%
+        mutate(lap_type=lap_type) %>%
+        mutate(bio=bio)
+      longdf <- rbind(longdf, to_add)
       }
     }
-  }
   return(longdf)
-}
+  }
 
 project <- allLapPrep(args[1])
 

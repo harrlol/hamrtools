@@ -28,7 +28,7 @@ for ff in $out/pipeline/depth/*.bam
         then
             tt=$(basename $ff)
             nn=${tt%.*}
-            echo "extracting depth information from $nn"
+            echo "[$n] extracting depth information from $nn"
             for i in $(seq 1 $(wc -l < $f))
             do
                 chr=$(sed "${i}q;d" $f | sed 's/\t/\n/g' | sed '1q;d')
@@ -37,8 +37,8 @@ for ff in $out/pipeline/depth/*.bam
                     -r $chr:$pos-$pos \
                     $ff \
                     | awk 'NR==2' | awk -F'\t' '{print $7}')
-                awk -v "i=$i" 'NR==i {print $0"\t"var; next} 1' var="$dph" $f > $d/${nn}_new.bed && mv $d/${nn}_new.bed $f
+                awk -v "i=$i" 'NR==i {print $0"\t"var; next} 1' var="$dph" $f > $d/${nn}_new.bed && mv $d/${nn}_new.bed $f &
             done
-            echo "finished $nn"
+            echo "[$n] finished $nn"
         fi
     done

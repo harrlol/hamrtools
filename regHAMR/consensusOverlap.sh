@@ -13,11 +13,13 @@ fi
 
 smp=$1
 cds=$2
-utr=$3
-gene=$4
-mrna=$5
-out=$6
-
+fiveutr=$3
+threeutr=$4
+gene=$5
+mrna=$6
+exon=$7
+all=$8
+out=$9
 
 IFS="/" read -ra sections <<< "$smp"
 temp="${sections[-1]}"
@@ -27,11 +29,7 @@ smpname="${templ[0]}"
 
 echo ""
 echo "sample = $1"
-echo "CDS lib = $2"
-echo "UTR lib = $3"
-echo "Gene lib = $4"
-echo "mRNA lib = $5"
-echo "out = $6"
+echo "out = $9"
 echo "consensus file prefix: $smpname"
 echo ""
 
@@ -45,13 +43,22 @@ intersectBed \
 echo "finished finding overlap with CDS library"
 
 echo "..."
-#overlap with utr
+#overlap with 5utr
 intersectBed \
-    -a $utr \
+    -a ${fiveutr} \
     -b $smp \
     -wa -wb \
-    > $out/$smpname"_UTR".bed
-echo "finished finding overlap with UTR library"
+    > $out/$smpname"_fiveUTR".bed
+echo "finished finding overlap with 5UTR library"
+
+echo "..."
+#overlap with 3utr
+intersectBed \
+    -a ${threeutr} \
+    -b $smp \
+    -wa -wb \
+    > $out/$smpname"_threeUTR".bed
+echo "finished finding overlap with 3UTR library"
 
 echo "..."
 #overlap with gene
@@ -68,5 +75,23 @@ intersectBed \
     -a $mrna \
     -b $smp \
     -wa -wb \
-    > $out/$smpname"_mRNA".bed
-echo "finished finding overlap with mRNA library"
+    > $out/$smpname"_primarymRNA".bed
+echo "finished finding overlap with primary mRNA library"
+
+echo "..."
+#overlap with exon
+intersectBed \
+    -a $exon \
+    -b $smp \
+    -wa -wb \
+    > $out/$smpname"_exon".bed
+echo "finished finding overlap with exon library"
+
+echo "..."
+#overlap with nc rna
+intersectBed \
+    -a $all \
+    -b $smp \
+    -wa -wb \
+    > $out/$smpname"_ncRNA".bed
+echo "finished finding overlap with ncRNA library"

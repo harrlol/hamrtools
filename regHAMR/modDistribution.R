@@ -15,8 +15,8 @@ longdf <- fread(args[1], stringsAsFactors = TRUE)
 modDistributionSMP <- function(df) {
   t <- df%>%
     filter(lap_type=="gene")
-  c <- intersect(unique(t$gene), g$V4)
-  toJ <- g%>%filter(V4 %in% c)%>%select(gene=V4, start=V2,end=V3)
+  c <- intersect(unique(t$gene), g$V5)
+  toJ <- g%>%filter(V5 %in% c)%>%select(gene=V5, start=V2,end=V3)
   temp <- left_join(t, toJ, by="gene")
   temp%>%
     mutate(norm_pos = (pos-start)/(end-start)*1000)%>%
@@ -34,8 +34,8 @@ modDistributionSMP <- function(df) {
 modDistributionTOT <- function(df) {
   t <- df%>%
     filter(lap_type=="gene")
-  c <- intersect(unique(t$gene), g$V4)
-  toJ <- g%>%filter(V4 %in% c)%>%select(gene=V4, start=V2,end=V3)
+  c <- intersect(unique(t$gene), g$V5)
+  toJ <- g%>%filter(V5 %in% c)%>%select(gene=V5, start=V2,end=V3)
   temp <- left_join(t, toJ, by="gene")
   temp%>%
     mutate(norm_pos = (pos-start)/(end-start)*1000)%>%

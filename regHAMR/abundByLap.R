@@ -39,7 +39,18 @@ abundByLap2 <- function(ldf, lib) {
     scale_fill_manual(values=cbPalette)
 }
 
-abundByLap1(args[1], args[2])
-ggsave(paste0(args[3],"/mod_abundance_",args[2],"1.pdf"), width = 10, height = 8, units = "in")
-abundByLap2(args[1], args[2])
-ggsave(paste0(args[3],"/mod_abundance_",args[2],"2.pdf"), width = 10, height = 8, units = "in")
+# Takes in the directory where all annotation beds are located
+dir <- args[2]
+
+# Create a list of file names and retain only those with .bed
+a <- list.files(dir)
+all_annotations <- a[grep("bed", a, ignore.case = TRUE)]
+
+for (ant in all_annotations) {
+  segs <- strsplit(ant, "_")[[1]]
+  lap_type <- sub("\\..*", "", segs[length(segs)])
+  abundByLap1(args[1], lap_type)
+  ggsave(paste0(args[3],"/mod_abundance_",lap_type,"1.pdf"), width = 10, height = 8, units = "in")
+  abundByLap2(args[1], lap_type)
+  ggsave(paste0(args[3],"/mod_abundance_",lap_type,"2.pdf"), width = 10, height = 8, units = "in")
+}

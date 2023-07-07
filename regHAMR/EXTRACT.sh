@@ -1,9 +1,9 @@
 #!/bin/bash
 set -eu
 
-# Suite for Modification or Annotation-purposed Cleaning and Keeping
+# Simply extract out information regarding HAMR predictions
 
-if [ "$#" -lt 5 ]; then
+if [ "$#" -lt 3 ]; then
 echo "Missing arguments!"
 echo "USAGE: EXTRACT.sh <proj dir> <knownant> <distTECH> <distGENO> <gene annotation file>"
 echo "EXAMPLE:"
@@ -16,14 +16,8 @@ dir=$1
 # The csv (in modtbl format) of the known mod you want analyzed in distToKnownMod
 antcsv=$2
 
-# The seq_tech of the sample group you want analyzed in distToKnownMod
-tech=$3
-
-# The genotype of the sample group you want analyzed in distToKnownMod
-geno=$4
-
-# The gene annotation file for your organism, obtained with Diep's code
-ant=$5
+# The annotation folder for your organism
+ant=$3
 curdir=$(dirname $0)
 
 # collapse all overlapped data into longdf
@@ -31,10 +25,10 @@ Rscript $curdir/allLapPrep.R \
     $dir/lap \
     $dir
 
-# overview of modification proportaion
+# overview of modification proportion
 Rscript $curdir/abundByLap.R \
     $dir/mod_long.csv \
-    gene \
+    $ant \
     $dir
 
 # analyze hamr-mediated/true clustering across project
@@ -45,12 +39,20 @@ Rscript $curdir/clusterAnalysis.R \
 # analyze hamr-mediated/true clustering across project
 Rscript $curdir/distToKnownMod.R \
     $dir/mod_long.csv \
-    $antcsv \
-    gene $tech $geno \
-    $dir
+    $antcsv
 
-# looking at around which part of a gene a certain mod is likely to be found 
+gff=$(find $ant -maxdepth 1 -name "*_gene*")
+if [ -z "$gff" ]; then
+    echo "gff3 annotation file not found"
+    exit 1
+fi
+
+# looking at around which part of a gene a certain mod is likely to be found
 Rscript $curdir/modDistribution.R \
     $dir/mod_long.csv \
-    $ant \
+    $gff \
     $dir
+
+# looking at RNA subtype for mods
+Rscript $curdir/RNAtype.R \
+    $dir/mod_long.csv

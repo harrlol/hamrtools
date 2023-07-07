@@ -6,8 +6,8 @@ args=commandArgs(trailingOnly=TRUE)
 
 bed2modtbl <- function(bed) {
   out <- bed%>%
-    mutate(start=bp, end =bp, seqname=as.character(chr), score=".", Name=as.character(pred.mod), strand=as.character(strand))%>%
-    select(seqname, start, end, Name, score, strand)
+    mutate(start=bp, end=bp, seqname=as.character(chr), name=as.character(pred.mod), strand=as.character(strand))%>%
+    select(seqname, start, end, name, strand)
   return(out)
 }
 
@@ -31,14 +31,20 @@ comb.union2 <- function(bedlist) {
 }
 
 findConsensus <- function(in_dir, out_dir) {
+  # Store all files in in_dir to a variable
   file_names <- list.files(path = in_dir)
-  file_names <- grep(".mods.txt", file_names,value=TRUE)
+  
+  # filters for only the files that ends in .mod.txt
+  file_names <- grep(".mods.txt", file_names, value=TRUE)
+  
+  # initialize var to store names of sample groups, so that rep >1 are skipped when encountered
   processed_variables <- c()
   for (file_name in file_names) {
     if (!(file_name %in% processed_variables)) {
       # Extract the common part of the variable name
       common_part <- sub("_[^_]*$", "", file_name)
-      # Find variables with the same common part
+      
+      # Find files with the same sample group name (collect all reps)
       variables_to_process <- grep(paste0("^", common_part, "_"), file_names, value = TRUE)
       
       # Add the selected files to processed variables

@@ -5,11 +5,11 @@ library(reshape2)
 library(ggplot2)
 cbPalette <- c("#999999", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
 
-#arguments: longdf.csv, knownmod.csv, lap_type, seq_tech, genotype, out dir
+#arguments: longdf.csv, knownmod.csv
 
 args=commandArgs(trailingOnly=TRUE)
 
-Ref <- read.csv(args[2], sep = '\t', header = TRUE, stringsAsFactors = TRUE)
+ref <- read.csv(args[2], sep = '\t', header = TRUE, stringsAsFactors = TRUE)
 longdf <- fread(args[1], stringsAsFactors = TRUE)
 
 DisToRef <- function(modtbl, reftbl, isolist) {
@@ -92,5 +92,14 @@ refRelation <- function(df, type, tech, geno, ref) {
     scale_fill_manual(values=cbPalette)
 }
 
-refRelation(longdf, args[3], args[4], args[5], Ref)
-ggsave(paste0(args[6],"/distance_to_provided_annotations.pdf"), width = 10, height = 8, units = "in")
+
+dir <- dirname(args[1])
+
+a <- unique(longdf$genotype)
+b <- unique(longdf$seq_tech)
+g <- expand.grid(a,b)
+
+for (i in (1:nrow(g))) {
+  refRelation(longdf, "gene", g[i,2], g[i,1], ref)
+  ggsave(paste(dir,"/dist_to_ant_", g[i,1], "_", g[i,2], ".pdf", sep=""), width = 10, height = 8, units = "in")
+}
