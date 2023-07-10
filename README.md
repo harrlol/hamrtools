@@ -8,7 +8,7 @@ This tool aims to take in as simple as an SRR accession code, and returns HAMR a
 
 hamrbox is split into the below 2 suites: 
 ### regHAMR
-regular HAMR, crystalizes all the steps in Ryvkin et al.'s paper and extends the analysis through 4 algorhithms in R
+regular HAMR, crystalizes all the steps in Ryvkin et al.'s paper and extends the analysis through a dozen algorhithms in R
 that transforms the HAMR output in more accessible ways.
 
 ### scHAMR
