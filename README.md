@@ -1,4 +1,4 @@
-# hamrbox
+# HAMRbox
 This is a toolbox tailored for the High Throughput Annotation of Modified Ribonucleotides, abbreviated HAMR, developed by [Paul Ryvkin et al](https://rnajournal.cshlp.org/content/19/12/1684).
 The main function of hamrbox is to make the original method more accessible by automating the tedious pre-processing steps, allowing 
 users to analyze entire experiments at a time. More importantly, this repository adapts the HAMR pipeline to single-cell sequencing data, 
