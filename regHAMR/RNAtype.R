@@ -1,6 +1,10 @@
-library(ggplot2)
-library(dplyr)
-library(data.table)
+library(ggplot2, warn.conflicts = FALSE)
+library(dplyr, warn.conflicts = FALSE)
+library(data.table, warn.conflicts = FALSE)
+library(stringr, warn.conflicts = FALSE)
+options(dplyr.summarise.inform = FALSE)
+options(ggplot2.geom_density.inform = FALSE)
+
 cbPalette <- c("#999999", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
 
 args=commandArgs(trailingOnly=TRUE)
@@ -12,27 +16,29 @@ a <- unique(df$genotype)
 b <- unique(df$seq_tech)
 g <- expand.grid(a,b)
 
-for (i in (1:nrow(g))) {
+tb <- NULL
+suppressWarnings(for (i in (1:nrow(g))) {
   # Create Data
-  data <- df%>%
+  d <- df%>%
     filter(genotype == g[i,1] & seq_tech == g[i,2] & lap_type %in% c("ncRNA", "gene"))%>%
     group_by(bio)%>%
-    summarize(count=n())
+    summarize(count=n())%>%
+    mutate(group=paste(g[i,1], g[i,2], sep="_"))
   
-  # Compute the position of labels
-  data <- data %>% 
-    arrange(desc(bio)) %>%
-    mutate(prop = round(count / sum(data$count) *100, digits=1))%>%
-    mutate(ypos = cumsum(prop)- 0.5*prop )
+  # If the geno+seq parameter combo yields an empty table, skip the rest and proceed to next iteration
+  if (nrow(d)<1) next
   
-  # Basic piechart
-  ggplot(data, aes(x="", y=prop, fill=bio)) +
-    geom_bar(stat="identity", width=1, color="white") +
-    coord_polar("y", start=0) +
-    scale_fill_manual(values=cbPalette)+
-    theme_void()+
-    labs(title=paste("Mod Distribution in RNA Subtypes in", g[i,1], g[i,2], sep = " "))
-  
-  ggsave(paste(dir,"/RNA_type_", g[i,1], "_", g[i,2], ".pdf", sep=""), width = 10, height = 8, units = "in")
-}
- 
+  # add new data to large table
+  tb <- rbind(tb, d)
+})
+
+# Creating ggplot of RNA subtype visualization
+tb%>%
+  ggplot(aes(x=group, y=count))+
+  geom_col(aes(fill=bio), position = "stack")+
+  labs(title="HAMR Predicted Modification Broken Down by RNA Subtype", fill="Subtypes")+
+  xlab("Sample Group")+
+  ylab("Raw Mod Count")+
+  scale_fill_manual(values=cbPalette)
+
+ggsave(paste0(dir,"/RNAsubtype.pdf"), width = 10, height = 8, units = "in")
